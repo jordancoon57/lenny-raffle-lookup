@@ -261,7 +261,7 @@ function renderCard(acc, b, meta){
   res.innerHTML = `<div class="rcard">
     <div style="text-align:center;flex-shrink:0">
       <div class="rface">(͠≖ ͜ʖ͠≖)</div>
-      <div style="font-size:.65rem;color:var(--text-dim);margin-top:5px">${b.nftTotal} NFTs</div>
+      <div style="font-size:.65rem;color:var(--text-dim);margin-top:5px">${esc(acc)}</div>
     </div>
     <div style="flex:1;min-width:0">
       ${warn}
@@ -269,7 +269,7 @@ function renderCard(acc, b, meta){
       <div class="rtixl">RAFFLE TICKETS</div>
       <div class="rtiers">${badges.join('')}</div>
       ${lennyLine}
-      <div class="rmeta">${esc(acc)}</div>
+      <div class="rmeta">${b.nftTotal} NFTs</div>
       <div class="rmeta">Data updated: ${built}${meta.lennyUsd?` · $LENNY $${meta.lennyUsd.toFixed(8)}`:''}</div>
     </div>
   </div>`;
@@ -360,6 +360,46 @@ document.getElementById('hp-btn').addEventListener('click', () => {
       }
     }
   } catch(e){ /* no prior session */ }
+})();
+</script>
+<script>
+/* Animated Lenny-face favicon — (͠≖ ͜ʖ͠≖) — matches lennylens.xyz */
+(function () {
+  const SIZE = 128;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = SIZE;
+  const ctx = canvas.getContext('2d');
+  let link = document.querySelector('link[rel="icon"]');
+  if (!link) { link = document.createElement('link'); link.rel = 'icon'; link.type = 'image/png'; document.head.appendChild(link); }
+  const FACE = '(͠≖ ͜ʖ͠≖)';
+  const FRAMES = 24, FRAME_MS = 100;
+  let frame = 0, fontPx = 56;
+  function fitFont() {
+    const target = SIZE * 0.92;
+    for (let px = 80; px >= 24; px -= 2) {
+      ctx.font = `bold ${px}px 'Noto Sans', 'Segoe UI', Arial, sans-serif`;
+      if (ctx.measureText(FACE).width <= target) { fontPx = px; return; }
+    }
+    fontPx = 24;
+  }
+  function draw() {
+    const glow = 0.5 + 0.5 * Math.sin((frame / FRAMES) * Math.PI * 2);
+    ctx.clearRect(0, 0, SIZE, SIZE);
+    ctx.fillStyle = '#06060e'; ctx.fillRect(0, 0, SIZE, SIZE);
+    const halo = ctx.createRadialGradient(SIZE/2, SIZE/2, 8, SIZE/2, SIZE/2, SIZE/2);
+    halo.addColorStop(0, `rgba(0,255,0,${0.30 + glow * 0.30})`);
+    halo.addColorStop(1, 'rgba(0,255,0,0)');
+    ctx.fillStyle = halo; ctx.fillRect(0, 0, SIZE, SIZE);
+    ctx.font = `bold ${fontPx}px 'Noto Sans', 'Segoe UI', Arial, sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#00ff00'; ctx.shadowColor = '#00ff00'; ctx.shadowBlur = 10 + glow * 10;
+    ctx.fillText(FACE, SIZE/2, SIZE/2 + fontPx * 0.05);
+    ctx.shadowBlur = 0;
+    link.href = canvas.toDataURL('image/png');
+    frame = (frame + 1) % FRAMES;
+  }
+  function start() { fitFont(); draw(); setInterval(draw, FRAME_MS); }
+  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(start); } else { start(); }
 })();
 </script>
 </body>

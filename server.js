@@ -66,6 +66,13 @@ const LENNY_POOLS = [
   { title: 'gib - LENNY',      lpTokenId: '0.0.9454421',  poolId: 'saucerswap-1-0.0.7893707-0.0.9445148' },
 ];
 
+// SilkSuite DEX LP positions are minted as NFTs (not fungible LP tokens). Both LENNY-paired
+// pools (SILK/lenny, HSUITE/lenny) live under one LP-NFT collection. Undocumented public API
+// (open CORS), used read-only and wrapped defensively since it's a third-party dependency.
+const SILK_LP_NFT_ID = '0.0.5471454';
+const SILK_LENNY_POOL_WALLETS = new Set(['0.0.10306061', '0.0.9482093']); // SILK/lenny, HSUITE/lenny
+const SILK_API_HOSTS = ['tomachi', 'houdini', 'topachi', 'permabull'].map(h => 'https://' + h + '.silksuite.app');
+
 // ─── Cache ──────────────────────────────────────────────────────
 const cache = {
   tickets: {},   // wallet -> full breakdown
@@ -350,6 +357,45 @@ async function loadLPHolderBalances(state) {
   console.log('[lpbal]', LENNY_POOLS.length, 'pools,', totalWallets, 'unique LP holders');
 }
 
+// SilkSuite LENNY LP held (NFT positions valued in HBAR via the SilkSuite API). Ported from
+// the command center's loadSilkSuiteLpPositions(). Needs state.hbarUsd (run after computePrices).
+async function loadSilkSuiteLpPositions(state) {
+  state.silkLpUsdByWallet = {};
+  try {
+    const nfts = await fetchAll('/tokens/' + SILK_LP_NFT_ID + '/nfts?limit=100&order=desc', 'nfts', 20000);
+    const live = nfts.filter(n => !n.deleted);
+    if (!live.length) return;
+    const ownerBySerial = {};
+    live.forEach(n => { ownerBySerial[String(n.serial_number)] = n.account_id; });
+    const serials = live.map(n => n.serial_number);
+    const BATCH = 400;
+    let hostIdx = 0;
+    for (let i = 0; i < serials.length; i += BATCH) {
+      const batch = serials.slice(i, i + BATCH);
+      const qs = batch.map(s => 'serialNumbers=' + s).join('&');
+      for (let attempt = 0; attempt < SILK_API_HOSTS.length; attempt++) {
+        const host = SILK_API_HOSTS[hostIdx % SILK_API_HOSTS.length]; hostIdx++;
+        try {
+          const r = await fetch(host + '/pools/positions?tokenId=' + SILK_LP_NFT_ID + '&' + qs);
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          const positions = await r.json();
+          (Array.isArray(positions) ? positions : []).forEach(pos => {
+            if (!SILK_LENNY_POOL_WALLETS.has(pos.poolWallet)) return;
+            const owner = ownerBySerial[String(pos.serialNumber)];
+            if (!owner) return;
+            const hbarVal = parseFloat(pos.liquidity?.investment?.exit ?? pos.liquidity?.investment?.entry ?? 0);
+            if (!hbarVal || !state.hbarUsd) return;
+            state.silkLpUsdByWallet[owner] = (state.silkLpUsdByWallet[owner] || 0) + hbarVal * state.hbarUsd;
+          });
+          break; // success, no need to try another host
+        } catch (e) { /* try next host on failure */ }
+      }
+      if (i + BATCH < serials.length) await new Promise(res => setTimeout(res, 150));
+    }
+    console.log('[silklp]', serials.length, 'positions scanned,', Object.keys(state.silkLpUsdByWallet).length, 'LENNY-paired wallets');
+  } catch (e) { console.warn('[silklp] error:', e.message); }
+}
+
 // ─── Ticket math (per wallet, ported from the dashboard helpers) ────
 function calcAllPoolsLpUsd(state, wallet) {
   let total = 0;
@@ -413,7 +459,8 @@ function ticketsForWallet(state, wallet, lennyRaw) {
   const burnedLennyTix = isContract ? 0 : 2 * Math.floor(((state.lennyBurnsByWallet || {})[wallet] || 0) / LENNY_PER_TICKET);
   const lockedLpTix = (isContract || !lennyUsd) ? 0 : Math.floor(((state.lpLocksByWallet || {})[wallet] || 0) / (LENNY_PER_TICKET * lennyUsd));
   const burnedLpTix = (isContract || !lennyUsd) ? 0 : 2 * Math.floor(((state.lpBurnsByWallet || {})[wallet] || 0) / (LENNY_PER_TICKET * lennyUsd));
-  const heldLpTix = (isContract || !lennyUsd) ? 0 : Math.floor(calcAllPoolsLpUsd(state, wallet) / (LENNY_PER_TICKET * lennyUsd));
+  const heldLpUsd = calcAllPoolsLpUsd(state, wallet) + ((state.silkLpUsdByWallet || {})[wallet] || 0);
+  const heldLpTix = (isContract || !lennyUsd) ? 0 : Math.floor(heldLpUsd / (LENNY_PER_TICKET * lennyUsd));
 
   const tickets = nftTix + lennyTix + stakingTix + lpRoundsTix + lockedLennyTix + lockedLpTix + heldLpTix + burnedLennyTix + burnedLpTix;
   return {
@@ -439,6 +486,7 @@ function buildAllFromState(state) {
     ...Object.keys(state.lpBurnsByWallet || {}),
     ...Object.keys(state.lpCurrentBalances || {}),
     ...Object.values(state.lpBalAllPools || {}).flatMap(m => Object.keys(m || {})),
+    ...Object.keys(state.silkLpUsdByWallet || {}),
   ]);
   const out = {};
   walletSet.forEach(w => { if (!w) return; const b = ticketsForWallet(state, w); if (b.tickets > 0) out[w] = b; });
@@ -461,6 +509,7 @@ async function refresh() {
       loadLP(state),
       loadDaVinci(state),
       loadLPHolderBalances(state),
+      loadSilkSuiteLpPositions(state),
     ]);
     await loadStaking(state);
     await loadStakingPurchases(state); // expensive, per-staker; runs server-side only
