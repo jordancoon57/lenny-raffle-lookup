@@ -134,6 +134,28 @@ a.tg-lbl:hover { text-decoration: underline; filter: brightness(1.25); }
 .guide-note { font-size: 0.72rem; color: var(--text-dim); margin-top: 12px; line-height: 1.6; }
 .foot { text-align: center; font-size: 0.7rem; color: var(--text-dim); margin-top: 28px; }
 .foot a { color: var(--blue); text-decoration: none; }
+/* Mobile "Open HashPack" tap sheet */
+.hp-sheet {
+  position: fixed; inset: 0; z-index: 100; display: none;
+  align-items: center; justify-content: center; padding: 24px;
+  background: rgba(4, 4, 12, 0.88); backdrop-filter: blur(4px);
+}
+.hp-sheet.show { display: flex; }
+.hp-sheet-box {
+  background: var(--bg2); border: 1px solid var(--green);
+  border-radius: 16px; padding: 26px 22px; max-width: 340px; width: 100%;
+  text-align: center; box-shadow: 0 0 30px rgba(0,255,0,0.25);
+}
+.hp-sheet-face { color: var(--green); font-size: 1.6rem; margin-bottom: 8px; text-shadow: 0 0 14px rgba(0,255,0,0.6); }
+.hp-sheet-box p { color: var(--text); font-size: 0.82rem; margin-bottom: 18px; line-height: 1.5; }
+.hp-open-btn {
+  display: block; width: 100%; padding: 15px; border-radius: 12px;
+  background: var(--green); color: #04040c; font-family: var(--font);
+  font-weight: bold; font-size: 1rem; text-decoration: none;
+  box-shadow: 0 0 18px rgba(0,255,0,0.5); margin-bottom: 12px;
+}
+.hp-open-btn:active { filter: brightness(0.9); }
+.hp-sheet-cancel { background: none; border: none; color: var(--text-dim); font-family: var(--font); font-size: 0.78rem; cursor: pointer; text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -141,6 +163,16 @@ a.tg-lbl:hover { text-decoration: underline; filter: brightness(1.25); }
   <div class="parallax-layer grid-layer"></div>
   <div class="parallax-layer glow-layer"></div>
   <div id="floats"></div>
+</div>
+
+<!-- Mobile-only: tap sheet that reliably opens the HashPack app -->
+<div class="hp-sheet" id="hp-sheet">
+  <div class="hp-sheet-box">
+    <div class="hp-sheet-face">(͠≖ ͜ʖ͠≖)づ🎟️</div>
+    <p>Tap below to open <strong>HashPack</strong> and approve the connection, then return here.</p>
+    <a class="hp-open-btn" id="hp-open-btn" href="#" target="_self" rel="noopener">Open HashPack</a>
+    <button class="hp-sheet-cancel" id="hp-sheet-cancel" type="button">Cancel</button>
+  </div>
 </div>
 
 <div class="main-wrap">
@@ -201,17 +233,49 @@ const WC_METADATA = {
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function fmtLenny(raw){ if(raw==null) return '—'; const n = raw/1e6; return n.toLocaleString('en-US',{maximumFractionDigits:0}); }
 
-// Floating lenny faces
+// Floating lenny faces — matches lennylens.xyz background
 (function(){
   const box = document.getElementById('floats');
-  const faces = ['( ͡° ͜ʖ ͡°)','(͠≖ ͜ʖ͠≖)','ᕦ( ͡° ͜ʖ ͡°)ᕤ'];
-  for(let i=0;i<8;i++){
+  const faces = [
+    '( ͡° ͜ʖ ͡°)', '(͠≖ ͜ʖ͠≖)',
+    '¯\\_(ツ)_/¯', '(╯°□°)╯',
+    'ᕦ( ͡° ͜ʖ ͡°)ᕤ', '(ಠ_ಠ)',
+    '(●\'ω\'●)', '(⌐■_■)',
+    '( ͡~ ͜ʖ ͡°)',
+    '(ง ͠° ͟ʖ ͡°)ง', '(ಥ ͜ʖಥ)',
+    '( ͡◐ ͜ʖ ͡◑ )', '╭∩╮( ͡⚆ ͜ʖ ͡⚆)╭∩╮',
+    'ᕕ( ͡° ͜ʖ ͡° )ᕗ', 'ヽ(͡◕ ͜ʖ ͡◕)ﾉ',
+    'ᕙ(⚆.⚆)ᕗ', '༼▃ Ĺ̯ ▃༽',
+    '☜(⌒▽⌒)☞', '(▀̿ĺ̯▀̿ ̿)',
+    '┏(\'▀_▀\')ノ♬♪', '┗(▀̿ĺ̯▀̿ ̿)┓',
+    'ᕙ(͠ⓖ ͜ʖ͠ⓜ)つ', '(͠𝓖 ͜ʖ͠𝓝)💤',
+    '╰( ^o^)╮', '┏(-_-)┛',
+    '(/❛o❛)/', '[̲̅$̲̅(̲̅ ͡° ͜ʖ ͡°̲̅)̲̅$̲̅]',
+    '◕‿↼', '( ͠° ͟ʖ ͡°)',
+    '( ͡ ͡° ͜つ ͡͡° )', '( ͡° ͜ʖ ͡°)╭∩╮',
+    '（ ＾人＾ ）', '༼ つ ͡° ͜ʖ ͡° ༽つ',
+    '༼ ͡☉ ͜ʖ ͡☉ ༽', '╰(◕ᗜ◕)╯',
+    '༼ ▀̿̿Ĺ̯̿̿▀̿ ̿༽', 'd(⌒ー⌒)',
+    '(＾＾)ｂ', 'ヽ(•‿•)ノ',
+    'ᕙ(⇀‸↼‶) ᕗ', 'ᕙ(の_の)ᕗ',
+    '(っ˘з(˘⌣˘ )', '(‿!‿) ԅ(≖‿≖ԅ)',
+    '(◡︵◡)',
+  ];
+  const SPAWN_COUNT = Math.ceil(faces.length * 0.55); // ~24 of 44
+  const pickFace = () => faces[Math.floor(Math.random() * faces.length)];
+  for(let i=0;i<SPAWN_COUNT;i++){
     const el = document.createElement('div');
     el.className='lenny-float';
-    el.textContent = faces[i%faces.length];
+    el.textContent = pickFace();
     el.style.left = (Math.random()*100)+'%';
     el.style.animationDelay = (-Math.random()*40)+'s';
-    el.style.animationDuration = (30+Math.random()*20)+'s';
+    el.style.animationDuration = (30+Math.random()*30)+'s';
+    el.style.fontSize = (0.8 + Math.random()*0.8)+'rem';
+    el.addEventListener('animationiteration', () => {
+      el.textContent = pickFace();
+      el.style.left = (Math.random()*100)+'%';
+      el.style.fontSize = (0.8 + Math.random()*0.8)+'rem';
+    });
     box.appendChild(el);
   }
 })();
@@ -288,10 +352,43 @@ function setHpStatus(txt, ok){ const el=document.getElementById('hp-status'); el
 
 let hpAccount = null;
 
+// ── Mobile deep-link fix ────────────────────────────────────────
+// The hashinal-wc SDK opens HashPack on mobile by programmatically clicking a
+// hidden target="_blank" anchor to https://link.hashpack.app/wc?uri=... . That
+// fires AFTER the async WalletConnect handshake (outside the user's tap gesture)
+// and in a new tab, so iOS/Android just load the universal-link page in the
+// browser instead of launching the app. We intercept that click on mobile and
+// surface a real, user-tappable button — a genuine tap makes the OS honor the
+// universal link and open the HashPack app.
+const HP_IS_MOBILE = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test((navigator.userAgent||'').toLowerCase());
+function showHpSheet(href){
+  const sheet = document.getElementById('hp-sheet');
+  const open  = document.getElementById('hp-open-btn');
+  open.href = href;
+  sheet.classList.add('show');
+}
+function hideHpSheet(){ document.getElementById('hp-sheet').classList.remove('show'); }
+if(HP_IS_MOBILE){
+  // Capture-phase so we beat the SDK anchor's default navigation.
+  document.addEventListener('click', (e) => {
+    const a = e.target && e.target.closest ? e.target.closest('a[href*="link.hashpack.app"]') : null;
+    if(!a) return;
+    // Ignore our own visible button (let it navigate normally).
+    if(a.id === 'hp-open-btn') return;
+    e.preventDefault();
+    e.stopPropagation();
+    showHpSheet(a.href);
+  }, true);
+  document.getElementById('hp-sheet-cancel').addEventListener('click', hideHpSheet);
+  // Tapping our button opens the app; dismiss the sheet.
+  document.getElementById('hp-open-btn').addEventListener('click', () => setTimeout(hideHpSheet, 300));
+}
+
 // Reflect connection state in the button + status line.
 function applyHpState(accountId){
   const btn = document.getElementById('hp-btn');
   hpAccount = accountId || null;
+  hideHpSheet();
   if(hpAccount){
     btn.textContent = '🔌 Disconnect';
     setHpStatus(hpAccount, true);
@@ -315,6 +412,7 @@ async function connectHashPack(){
     applyHpState(accountId);
     doLookup();
   } catch(e){
+    hideHpSheet();
     setHpStatus('connect failed', false);
     console.warn('[hashpack]', e);
   } finally {
