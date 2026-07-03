@@ -1,0 +1,16 @@
+{
+  "name": "lenny-raffle-lookup",
+  "version": "1.0.0",
+  "description": "Fast standalone raffle-ticket lookup for $LENNY ASCII holders — live via Render, mirrors the Command Center's ticket math.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
+  }
+}

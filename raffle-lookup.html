@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raffle Tickets · $LENNY</title>
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgAAIAAAUAAeImBZsAAAAASUVORK5CYII=">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #06060e;
+  --bg2: #0c0c1a;
+  --card: rgba(10, 10, 25, 0.85);
+  --border: rgba(0, 58, 253, 0.25);
+  --blue: #003afd;
+  --green: #00ff00;
+  --text: #d0d0e0;
+  --text-dim: #9a9ab0;
+  --text-bright: #f0f0ff;
+  --red: #ff3355;
+  --font: 'Courier New', 'Consolas', monospace;
+}
+html { scroll-behavior: smooth; overflow-x: hidden; max-width: 100vw; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  max-width: 100vw;
+  line-height: 1.5;
+  position: relative;
+}
+/* Parallax background */
+.parallax-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.parallax-layer { position: absolute; inset: -50%; width: 200%; height: 200%; }
+.grid-layer {
+  background:
+    linear-gradient(rgba(0, 58, 253, 0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 58, 253, 0.10) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridMove 25s linear infinite;
+}
+@keyframes gridMove { to { transform: translate(60px, 60px); } }
+.glow-layer {
+  background:
+    radial-gradient(ellipse 600px 600px at 20% 30%, rgba(0, 58, 253, 0.18), transparent),
+    radial-gradient(ellipse 500px 500px at 80% 70%, rgba(0, 255, 0, 0.12), transparent);
+  animation: glowPulse 8s ease-in-out infinite alternate;
+}
+@keyframes glowPulse { from { opacity: 0.6; transform: scale(1); } to { opacity: 1; transform: scale(1.08); } }
+.lenny-float {
+  position: absolute; font-size: 1.4rem; opacity: 0.12; color: var(--green);
+  white-space: nowrap; animation: lennyDrift 40s linear infinite;
+  text-shadow: 0 0 8px rgba(0, 255, 0, 0.3);
+  font-family: 'Noto Sans', 'Segoe UI', Arial, sans-serif;
+}
+@keyframes lennyDrift { from { transform: translateY(110vh) rotate(0deg); } to { transform: translateY(-20vh) rotate(15deg); } }
+/* Layout */
+.main-wrap { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; padding: 0 20px 60px; }
+.header { text-align: center; padding: 40px 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.ascii-logo {
+  color: var(--green); font-size: 24px; line-height: 1.15; letter-spacing: 1px;
+  white-space: pre; margin-bottom: 10px; animation: lennyGlow 2.4s ease-in-out infinite;
+}
+@keyframes lennyGlow {
+  0%, 100% { text-shadow: 0 0 8px rgba(0,255,0,.5), 0 0 18px rgba(0,255,0,.35); }
+  50% { text-shadow: 0 0 16px rgba(0,255,0,.9), 0 0 34px rgba(0,255,0,.6), 0 0 52px rgba(0,255,0,.4); }
+}
+.header-title { font-size: 1.5rem; font-weight: bold; color: var(--text-bright); margin-bottom: 4px; }
+.header-title .hl-blue { color: var(--blue); }
+.header-title .hl-green { color: var(--green); }
+.header-sub { color: #ffffff; font-size: 0.8rem; letter-spacing: 2px; }
+/* Search / connect */
+.search-wrap { display: flex; justify-content: center; margin: 22px 0 10px; gap: 8px; flex-wrap: wrap; }
+.search-input {
+  background: var(--bg2); border: 1px solid var(--green); border-radius: 12px;
+  padding: 11px 16px; color: var(--text-bright); font-family: var(--font); font-size: 0.95rem;
+  width: 360px; max-width: 80vw; outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s; box-shadow: 0 0 8px rgba(0, 255, 0, 0.15);
+}
+.search-input:focus { border-color: var(--green); box-shadow: 0 0 16px rgba(0, 255, 0, 0.4); }
+.search-input::placeholder { color: var(--text-dim); }
+.btn {
+  border: 1px solid var(--blue); border-radius: 12px; padding: 11px 18px;
+  background: rgba(0, 58, 253, 0.15); color: var(--text-bright); font-family: var(--font);
+  font-size: 0.9rem; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.btn:hover { background: rgba(0, 58, 253, 0.3); box-shadow: 0 0 14px rgba(0, 58, 253, 0.4); }
+.btn.hp { border-color: var(--green); background: rgba(0, 255, 0, 0.10); }
+.btn.hp:hover { background: rgba(0, 255, 0, 0.22); box-shadow: 0 0 14px rgba(0, 255, 0, 0.35); }
+.btn:disabled { opacity: 0.5; cursor: default; box-shadow: none; }
+.connect-row { text-align: center; margin-bottom: 8px; font-size: 0.78rem; color: var(--text-dim); }
+.wallet-chip { color: var(--green); }
+/* Result card */
+.result { max-width: 640px; margin: 18px auto 0; }
+.rcard {
+  display: flex; gap: 18px; align-items: flex-start;
+  background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+  padding: 20px 22px; backdrop-filter: blur(4px);
+}
+.rface { font-size: 2.1rem; color: var(--green); text-shadow: 0 0 15px rgba(0, 255, 0, 0.4); font-family: 'Noto Sans', sans-serif; }
+.rtix { font-family: 'Orbitron', monospace; font-size: 2.6rem; font-weight: 700; color: var(--green); line-height: 1; text-shadow: 0 0 18px rgba(0, 255, 0, 0.35); }
+.rtixl { font-size: 0.7rem; letter-spacing: 3px; color: var(--text-dim); margin: 2px 0 12px; }
+.rtiers { display: flex; flex-wrap: wrap; gap: 6px; }
+.rt { font-size: 0.72rem; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); }
+.rt.g { color: #c9920a; border-color: rgba(201,146,10,.4); background: rgba(201,146,10,.10); }
+.rt.n { color: #6a8a9a; border-color: rgba(106,138,154,.4); background: rgba(106,138,154,.10); }
+.rt.p { color: #b04828; border-color: rgba(176,72,40,.4); background: rgba(176,72,40,.10); }
+.rt.pc { color: #d98a5c; border-color: rgba(184,104,64,.5); background: rgba(184,104,64,.14); }
+.rt.blue { color: var(--blue); border-color: rgba(0,58,253,.4); background: rgba(0,58,253,.15); }
+.rt.stake { color: #22c55e; border-color: rgba(34,197,94,.4); background: rgba(34,197,94,.15); }
+.rt.lp { color: #0ea5e9; border-color: rgba(14,165,233,.4); background: rgba(14,165,233,.15); }
+.rt.lock { color: #a855f7; border-color: rgba(168,85,247,.4); background: rgba(168,85,247,.15); }
+.rt.burn { color: #ef4444; border-color: rgba(239,68,68,.4); background: rgba(239,68,68,.15); }
+.rmeta { font-size: 0.72rem; color: var(--text-dim); margin-top: 10px; word-break: break-all; }
+.warn { margin: 8px 0; padding: 7px 10px; background: rgba(201,146,10,.10); border: 1px solid rgba(201,146,10,.4); border-radius: 6px; font-size: 0.72rem; color: #c9920a; }
+.msg { text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 14px; }
+.msg.err { color: var(--red); }
+/* Tier guide */
+.guide { max-width: 640px; margin: 34px auto 0; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; backdrop-filter: blur(4px); }
+.guide h2 { font-size: 1.35rem; font-weight: 700; color: #00ff00; font-family: var(--font); text-align: center; text-shadow: 0 0 6px #00ff00, 0 0 14px #00ff00; margin: 0 -22px 12px; padding: 0 22px 12px; border-bottom: 1px solid var(--border); }
+.tg-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.tg-row:last-child { border-bottom: none; }
+.tg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.tg-main { flex: 1; min-width: 0; }
+.tg-lbl { font-weight: 700; }
+a.tg-lbl { text-decoration: none; cursor: pointer; }
+a.tg-lbl:hover { text-decoration: underline; filter: brightness(1.25); }
+.tg-desc { color: #fff; font-size: 11px; margin-left: 8px; }
+.tg-val { font-family: 'Orbitron', monospace; font-size: 12px; white-space: nowrap; }
+.guide-note { font-size: 0.72rem; color: var(--text-dim); margin-top: 12px; line-height: 1.6; }
+.foot { text-align: center; font-size: 0.7rem; color: var(--text-dim); margin-top: 28px; }
+.foot a { color: var(--blue); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="parallax-bg">
+  <div class="parallax-layer grid-layer"></div>
+  <div class="parallax-layer glow-layer"></div>
+  <div id="floats"></div>
+</div>
+
+<div class="main-wrap">
+  <div class="header">
+    <div class="ascii-logo">(͠≖ ͜ʖ͠≖)づ🎟️</div>
+    <div class="header-title"><span class="hl-green">$LENNY</span> Raffle <span class="hl-blue">Ticket</span> Lookup</div>
+    <div class="header-sub">CHECK YOUR ODDS IN SECONDS</div>
+  </div>
+
+  <div class="search-wrap">
+    <input id="lk-input" class="search-input" placeholder="Enter wallet ID — 0.0.123456" autocomplete="off" spellcheck="false">
+    <button id="lk-btn" class="btn">Check Tickets</button>
+  </div>
+  <div class="connect-row">
+    <button id="hp-btn" class="btn hp">🔗 Connect HashPack</button>
+    <span id="hp-status"></span>
+  </div>
+
+  <div id="lk-result" class="result"></div>
+
+  <div class="guide">
+    <h2>🎟️ How raffle tickets are earned</h2>
+    <div class="tg-row"><div class="tg-dot" style="background:#b86840"></div><div class="tg-main"><a class="tg-lbl" href="https://sentx.io/nft-marketplace/0.0.10072399/traits/ASCII%20Material/🍑" target="_blank" rel="noopener" style="color:#b86840">🍑 ASCII</a><span class="tg-desc">Serials 667–769 · airdrop only</span></div><span class="tg-val" style="color:#b86840">4 raffle tickets</span></div>
+    <div class="tg-row"><div class="tg-dot" style="background:#c9920a"></div><div class="tg-main"><a class="tg-lbl" href="https://sentx.io/nft-marketplace/0.0.10072399/traits/ASCII%20Material/🅶🅾🅻🅳" target="_blank" rel="noopener" style="color:#c9920a">Gold ASCII</a><span class="tg-desc">Serials 1–111</span></div><span class="tg-val" style="color:#c9920a">3 raffle tickets</span></div>
+    <div class="tg-row"><div class="tg-dot" style="background:#6a8a9a"></div><div class="tg-main"><a class="tg-lbl" href="https://sentx.io/nft-marketplace/0.0.10072399/traits/ASCII%20Material/🅽🅸🅲🅺🅴🅻" target="_blank" rel="noopener" style="color:#6a8a9a">Nickel ASCII</a><span class="tg-desc">Serials 112–333</span></div><span class="tg-val" style="color:#6a8a9a">2 raffle tickets</span></div>
+    <div class="tg-row"><div class="tg-dot" style="background:#b04828"></div><div class="tg-main"><a class="tg-lbl" href="https://sentx.io/nft-marketplace/0.0.10072399/traits/ASCII%20Material/🅿🅴🅽🅽🆈" target="_blank" rel="noopener" style="color:#b04828">Penny ASCII</a><span class="tg-desc">Serials 334–666</span></div><span class="tg-val" style="color:#b04828">1 raffle ticket</span></div>
+    <div class="tg-row"><div class="tg-dot" style="background:#003afd"></div><div class="tg-main"><a class="tg-lbl" href="https://www.saucerswap.finance/swap/HBAR/0.0.9445148" target="_blank" rel="noopener" style="color:#003afd">💰 $LENNY balance</a><span class="tg-desc">held in wallet</span></div><span class="tg-val" style="color:#003afd">1 / 333,333</span></div>
+    <div class="tg-row"><div class="tg-dot" style="background:#22c55e"></div><div class="tg-main"><a class="tg-lbl" href="https://www.builtbyslime.org/staking" target="_blank" rel="noopener" style="color:#22c55e">🌾 Season 1 Staker</a><span class="tg-desc">held 100% of staking rewards received</span></div><span class="tg-val" style="color:#22c55e">1 ticket</span></div>
+    <div class="tg-row"><div class="tg-dot" style="background:#22c55e"></div><div class="tg-main"><a class="tg-lbl" href="https://www.builtbyslime.org/staking" target="_blank" rel="noopener" style="color:#22c55e">🌾 Accumulator</a><span class="tg-desc">held all rewards + bought more</span></div><span class="tg-val" style="color:#22c55e">+1 ticket</span></div>
+    <div class="tg-row"><div class="tg-dot" style="background:#0ea5e9"></div><div class="tg-main"><a class="tg-lbl" href="https://www.saucerswap.finance/pool/0.0.9480974/manage-position" target="_blank" rel="noopener" style="color:#0ea5e9">💧 LP currently held</a><span class="tg-desc">any known SaucerSwap or SilkSuite $LENNY pool</span></div><span class="tg-val" style="color:#0ea5e9">1 / 333,333 $LENNY-equiv</span></div>
+    <div class="tg-row"><div class="tg-dot" style="background:#0ea5e9"></div><div class="tg-main"><a class="tg-lbl" href="https://www.saucerswap.finance/pool/0.0.9480974/manage-position" target="_blank" rel="noopener" style="color:#0ea5e9">💧 LP airdrop rounds retained</a><span class="tg-desc">🍑 ASCII holders still holding LP drops</span></div><span class="tg-val" style="color:#0ea5e9">1 / round kept</span></div>
+    <div class="tg-row"><div class="tg-dot" style="background:#a855f7"></div><div class="tg-main"><a class="tg-lbl" href="https://davincigraph.io/summary/tokens/0.0.9445148?section=Locks" target="_blank" rel="noopener" style="color:#a855f7">🔒 DaVinci $LENNY locked</a><span class="tg-desc">locked via DaVinciGraph</span></div><span class="tg-val" style="color:#a855f7">1 / 333,333</span></div>
+    <div class="tg-row"><div class="tg-dot" style="background:#a855f7"></div><div class="tg-main"><a class="tg-lbl" href="https://davincigraph.io/summary/tokens/0.0.9445148?section=Liquidity" target="_blank" rel="noopener" style="color:#a855f7">🔒 DaVinci LP locked</a><span class="tg-desc">locked via DaVinciGraph</span></div><span class="tg-val" style="color:#a855f7">1 / 333,333 $LENNY-equiv</span></div>
+    <div class="tg-row"><div class="tg-dot" style="background:#ef4444"></div><div class="tg-main"><a class="tg-lbl" href="https://davincigraph.io/summary/tokens/0.0.9445148?section=Burns" target="_blank" rel="noopener" style="color:#ef4444">🔥 DaVinci $LENNY burned</a><span class="tg-desc">permanently burned via DaVinciGraph</span></div><span class="tg-val" style="color:#ef4444">2 / 333,333</span></div>
+    <div class="tg-row"><div class="tg-dot" style="background:#ef4444"></div><div class="tg-main"><a class="tg-lbl" href="https://davincigraph.io/summary/tokens/0.0.9445148?section=Liquidity" target="_blank" rel="noopener" style="color:#ef4444">🔥 DaVinci LP burned</a><span class="tg-desc">permanently burned via DaVinciGraph</span></div><span class="tg-val" style="color:#ef4444">2 / 333,333 $LENNY-equiv</span></div>
+    <div class="guide-note">LP & burn categories are valued in $LENNY-equivalent using the live pool price, so a locked/burned amount can shift by a ticket or two as price moves. Smart-contract / platform wallets earn 0 tickets. Numbers match the $LENNY Command Center exactly.</div>
+  </div>
+
+  <div class="foot">
+    Live data, auto-refreshing · <a href="https://lennylens.xyz" target="_blank">lennylens.xyz</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@hashgraphonline/hashinal-wc@2.0.64/dist/umd/hashinal-wc.umd.js"></script>
+<script>
+// ─── Config ─────────────────────────────────────────────────────
+// Same-origin by default (served by the backend). To host this HTML standalone
+// (e.g. on Hedera) pointing at the Render backend, set API_BASE to that URL.
+const API_BASE = ''; // e.g. 'https://lenny-raffle-lookup.onrender.com'
+const REOWN_PROJECT_ID = 'd0be9f6702186d965cea6bd014425f8e';
+const WC_METADATA = {
+  name: '$LENNY Raffle Lookup',
+  description: 'Check your $LENNY ASCII raffle tickets',
+  url: location.origin,
+  icons: ['https://lennylens.xyz/favicon.ico'],
+};
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function fmtLenny(raw){ if(raw==null) return '—'; const n = raw/1e6; return n.toLocaleString('en-US',{maximumFractionDigits:0}); }
+
+// Floating lenny faces
+(function(){
+  const box = document.getElementById('floats');
+  const faces = ['( ͡° ͜ʖ ͡°)','(͠≖ ͜ʖ͠≖)','ᕦ( ͡° ͜ʖ ͡°)ᕤ'];
+  for(let i=0;i<8;i++){
+    const el = document.createElement('div');
+    el.className='lenny-float';
+    el.textContent = faces[i%faces.length];
+    el.style.left = (Math.random()*100)+'%';
+    el.style.animationDelay = (-Math.random()*40)+'s';
+    el.style.animationDuration = (30+Math.random()*20)+'s';
+    box.appendChild(el);
+  }
+})();
+
+// ─── Lookup ─────────────────────────────────────────────────────
+async function doLookup(){
+  const inp = document.getElementById('lk-input');
+  const res = document.getElementById('lk-result');
+  const acc = inp.value.trim();
+  if(!acc) return;
+  if(!/^0\.0\.\d+$/.test(acc)){ res.innerHTML = '<div class="msg err">Invalid wallet ID. Format: 0.0.123456</div>'; return; }
+  res.innerHTML = '<div class="msg">Fetching…</div>';
+  try {
+    const r = await fetch(API_BASE + '/api/tickets/' + acc);
+    if(!r.ok){ const e = await r.json().catch(()=>({})); throw new Error(e.error || ('HTTP '+r.status)); }
+    const { breakdown: b, meta } = await r.json();
+    renderCard(acc, b, meta);
+  } catch(e){
+    res.innerHTML = '<div class="msg err">Error: ' + esc(e.message) + '</div>';
+  }
+}
+
+function renderCard(acc, b, meta){
+  const res = document.getElementById('lk-result');
+  const c = b.nftCounts || {gold:0,nickel:0,penny:0,peach:0};
+  const badges = [];
+  if(c.gold)   badges.push(`<span class="rt g">🥇 ${c.gold}×3 = ${c.gold*3} 🎟️</span>`);
+  if(c.nickel) badges.push(`<span class="rt n">🥈 ${c.nickel}×2 = ${c.nickel*2} 🎟️</span>`);
+  if(c.penny)  badges.push(`<span class="rt p">🥉 ${c.penny}×1 = ${c.penny} 🎟️</span>`);
+  if(c.peach)  badges.push(`<span class="rt pc">🍑 ${c.peach}×4 = ${c.peach*4} 🎟️</span>`);
+  if(b.lennyTickets>0)   badges.push(`<span class="rt blue">💰 $LENNY = ${b.lennyTickets} 🎟️</span>`);
+  if(b.stakingTix>0)     badges.push(`<span class="rt stake">🌾 Staking = ${b.stakingTix} 🎟️</span>`);
+  if(b.lpRoundsTix>0)    badges.push(`<span class="rt lp">💧 LP rounds kept = ${b.lpRoundsTix} 🎟️</span>`);
+  if(b.lockedLennyTix>0) badges.push(`<span class="rt lock">🔒 $LENNY locked = ${b.lockedLennyTix} 🎟️</span>`);
+  if(b.lockedLpTix>0)    badges.push(`<span class="rt lock">🔒 LP locked = ${b.lockedLpTix} 🎟️</span>`);
+  if(b.heldLpTix>0)      badges.push(`<span class="rt lp">💧 LP held = ${b.heldLpTix} 🎟️</span>`);
+  if(b.burnedLennyTix>0) badges.push(`<span class="rt burn">🔥 $LENNY burned = ${b.burnedLennyTix} 🎟️</span>`);
+  if(b.burnedLpTix>0)    badges.push(`<span class="rt burn">🔥 LP burned = ${b.burnedLpTix} 🎟️</span>`);
+
+  const warn = b.isContract ? `<div class="warn">⚠️ Smart contract / platform wallet — held tokens belong to a contract, not a person, so it earns 0 raffle tickets.</div>` : '';
+  const noneMsg = (b.tickets===0 && !b.isContract) ? `<div class="msg">No qualifying $LENNY ASCIIs, balance, or activity found for this wallet.</div>` : '';
+  const lennyLine = b.lennyBal>0 ? `<div class="rmeta">$LENNY balance: <span style="color:var(--green)">${fmtLenny(b.lennyBal)}</span>${meta.lennyUsd?` (≈ $${(b.lennyBal/1e6*meta.lennyUsd).toLocaleString('en-US',{maximumFractionDigits:2})})`:''}</div>` : '';
+  const built = meta.builtAt ? new Date(meta.builtAt).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+
+  if(noneMsg){ res.innerHTML = warn + noneMsg + `<div class="rmeta" style="text-align:center">${esc(acc)}</div>`; return; }
+
+  res.innerHTML = `<div class="rcard">
+    <div style="text-align:center;flex-shrink:0">
+      <div class="rface">(͠≖ ͜ʖ͠≖)</div>
+      <div style="font-size:.65rem;color:var(--text-dim);margin-top:5px">${b.nftTotal} NFTs</div>
+    </div>
+    <div style="flex:1;min-width:0">
+      ${warn}
+      <div class="rtix">${b.tickets}</div>
+      <div class="rtixl">RAFFLE TICKETS</div>
+      <div class="rtiers">${badges.join('')}</div>
+      ${lennyLine}
+      <div class="rmeta">${esc(acc)}</div>
+      <div class="rmeta">Data updated: ${built}${meta.lennyUsd?` · $LENNY $${meta.lennyUsd.toFixed(8)}`:''}</div>
+    </div>
+  </div>`;
+}
+
+document.getElementById('lk-btn').addEventListener('click', doLookup);
+document.getElementById('lk-input').addEventListener('keydown', e => { if(e.key==='Enter') doLookup(); });
+
+// ─── HashPack ───────────────────────────────────────────────────
+function getWC(){
+  const g = window.HashinalsWalletConnectSDK;
+  if(!g) return null;
+  return (typeof g.getInstance==='function') ? g.getInstance() : g;
+}
+function setHpStatus(txt, ok){ const el=document.getElementById('hp-status'); el.innerHTML = txt ? ` · <span class="${ok?'wallet-chip':''}">${esc(txt)}</span>` : ''; }
+
+let hpAccount = null;
+
+// Reflect connection state in the button + status line.
+function applyHpState(accountId){
+  const btn = document.getElementById('hp-btn');
+  hpAccount = accountId || null;
+  if(hpAccount){
+    btn.textContent = '🔌 Disconnect';
+    setHpStatus(hpAccount, true);
+  } else {
+    btn.textContent = '🔗 Connect HashPack';
+    setHpStatus('', false);
+  }
+}
+
+async function connectHashPack(){
+  const btn = document.getElementById('hp-btn');
+  const sdk = getWC();
+  if(!sdk){ setHpStatus('wallet SDK failed to load', false); return; }
+  if(!REOWN_PROJECT_ID || REOWN_PROJECT_ID.indexOf('...')>=0){ setHpStatus('projectId required', false); return; }
+  btn.disabled = true; setHpStatus('connecting…', false);
+  try {
+    const r = await sdk.connectWallet(REOWN_PROJECT_ID, WC_METADATA, 'mainnet');
+    const accountId = r?.accountId || r?.accountIds?.[0] || (typeof r==='string'?r:null);
+    if(!accountId) throw new Error('no account returned');
+    document.getElementById('lk-input').value = accountId;
+    applyHpState(accountId);
+    doLookup();
+  } catch(e){
+    setHpStatus('connect failed', false);
+    console.warn('[hashpack]', e);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function disconnectHashPack(){
+  const btn = document.getElementById('hp-btn');
+  const sdk = getWC();
+  btn.disabled = true;
+  try {
+    if(sdk){
+      if(typeof sdk.disconnectWallet==='function') await sdk.disconnectWallet();
+      else if(typeof sdk.disconnect==='function') await sdk.disconnect();
+    }
+  } catch(e){ console.warn('[hashpack] disconnect', e); }
+  finally {
+    // Clear the wallet ID everywhere on the page.
+    document.getElementById('lk-input').value = '';
+    document.getElementById('lk-result').innerHTML = '';
+    applyHpState(null);
+    btn.disabled = false;
+  }
+}
+
+// One button toggles between connect and disconnect.
+document.getElementById('hp-btn').addEventListener('click', () => {
+  if(hpAccount) disconnectHashPack(); else connectHashPack();
+});
+
+// Auto-restore a previous session, if any.
+(async function(){
+  try {
+    const sdk = getWC();
+    if(sdk && typeof sdk.initAccount==='function'){
+      const info = await sdk.initAccount(REOWN_PROJECT_ID, WC_METADATA, 'mainnet');
+      const accountId = info?.accountId || info?.accountIds?.[0];
+      if(accountId){
+        document.getElementById('lk-input').value = accountId;
+        applyHpState(accountId);
+        doLookup();
+      }
+    }
+  } catch(e){ /* no prior session */ }
+})();
+</script>
+</body>
+</html>
