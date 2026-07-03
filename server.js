@@ -124,9 +124,19 @@ function lennyTickets(rawBal) { if (!rawBal || rawBal <= 0) return 0; return Mat
 // ─── Pricing (ported) ───────────────────────────────────────────
 async function computePrices(state) {
   let hbarUsd = null, lennyUsd = null, lpPriceUsd = null;
-  // HBAR/USD — CoinGecko, fallback Binance
-  const cg = await jget('https://api.coingecko.com/api/v3/simple/price?ids=hedera-hashgraph&vs_currencies=usd');
-  hbarUsd = cg?.['hedera-hashgraph']?.usd ?? null;
+  // HBAR/USD — Coinbase & Kraken work from datacenter IPs (Render); CoinGecko/Binance
+  // block cloud IPs so they're last-resort fallbacks only.
+  const cb = await jget('https://api.coinbase.com/v2/prices/HBAR-USD/spot');
+  hbarUsd = cb?.data?.amount ? parseFloat(cb.data.amount) : null;
+  if (!hbarUsd) {
+    const kr = await jget('https://api.kraken.com/0/public/Ticker?pair=HBARUSD');
+    const krKey = kr?.result ? Object.keys(kr.result)[0] : null;
+    hbarUsd = krKey ? parseFloat(kr.result[krKey].c[0]) : null;
+  }
+  if (!hbarUsd) {
+    const cg = await jget('https://api.coingecko.com/api/v3/simple/price?ids=hedera-hashgraph&vs_currencies=usd');
+    hbarUsd = cg?.['hedera-hashgraph']?.usd ?? null;
+  }
   if (!hbarUsd) {
     const b = await jget('https://api.binance.com/api/v3/ticker/price?symbol=HBARUSDT');
     hbarUsd = b?.price ? parseFloat(b.price) : null;
