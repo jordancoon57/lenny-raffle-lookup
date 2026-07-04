@@ -561,8 +561,9 @@ app.get('/api/meta', (req, res) => { cors(res); res.json(cache.meta); });
 app.get('/api/health', (req, res) => { cors(res); res.json({ ok: true, builtAt: cache.meta.builtAt, building: cache.building }); });
 
 // Serve the lookup page at / and /raffle (for lennylens.xyz/raffle routing).
-app.get(['/', '/raffle'], (req, res) => res.sendFile(path.join(__dirname, 'raffle-lookup.html')));
-app.use(express.static(__dirname));
+// Only the public/ folder is served — keeps server.js / package.json private.
+app.get(['/', '/raffle'], (req, res) => res.sendFile(path.join(__dirname, 'public', 'raffle-lookup.html')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ─── Startup ────────────────────────────────────────────────────
 app.listen(PORT, () => {
